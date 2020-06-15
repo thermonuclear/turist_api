@@ -1,0 +1,82 @@
+# Версия docker-compose
+version: '3.8'
+
+# Создаем отдельные контейнеры
+services:
+    # контейнер с nginx
+    nginx:
+        build:
+            context: .
+            dockerfile: nginx.dockerfile
+        volumes:
+            # папка с проектом
+            - ../app:/var/www/app
+            # конфиг для nginx
+            - "./conf/nginx:/etc/nginx/sites-available"
+            # папка с логами
+            - ./storage/log/nginx:/var/log/nginx
+        ports:
+            - "80:80"
+        depends_on:
+            - php-fpm
+        # Подключаем к общей сети с другими контейнерами
+        networks: 
+            - default
+    # Контейнер с менеджером php
+    php-fpm:
+        build:
+            context: .
+            dockerfile: php-fpm.dockerfile
+        volumes:
+            - ../app:/var/www/app
+        depends_on:
+            - mysql
+            - redis
+        environment:
+            - "DB_PORT=3306"
+            - "DB_HOST=mysql"
+            - "REDIS_PORT=6379"
+            - "REDIS_HOST=redis"
+        # Подключаем к общей сети с другими контейнерами
+        networks: 
+            - default
+    # Контейнер с базой данных
+    mysql:
+        image: mysql:8
+        # подключаем папку для хранения БД
+        volumes:
+            - ./storage/mysql:/var/lib/mysql
+        environment:
+            - "MYSQL_ROOT_PASSWORD=secret"
+            - "MYSQL_USER=app"
+            - "MYSQL_PASSWORD=secret"
+            - "MYSQL_DATABASE=app"
+        ports:
+            - "3306:3306"
+        # Подключаем к общей сети с другими контейнерами
+        networks: 
+            - default
+    # Контейнер с redis
+    redis:
+        image: redis:3.0
+        volumes:
+        - ./storage/redis:/data
+        ports:
+            - "6379:6379"
+        # Подключаем к общей сети с другими контейнерами
+        networks: 
+            - default
+    # Контейнер с phpmyadmin
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        environment:
+            - PMA_HOST=db
+            - PMA_USER=root
+            - PMA_PASSWORD=root
+        networks:
+            - default
+
+# Создаем общую сеть deafult для всех контейнеров
+networks:
+    default:
+        driver: bridge
