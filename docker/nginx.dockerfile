@@ -2,8 +2,6 @@
 FROM nginx:1.19.0
 
 # Удаляем конфиги сайтов которые там есть
-RUN rm -Rf /etc/nginx/sites-enabled/*
+#RUN rm -Rf /etc/nginx/conf.d/*
 # Добавляем наш конфиг
-ADD nginx/site.conf /etc/nginx/sites-available/site.conf
-# Включаем его
-RUN ln -s /etc/nginx/sites-available/site.conf /etc/nginx/sites-enabled/site.conf
+#COPY nginx/site.conf /etc/nginx/conf.d

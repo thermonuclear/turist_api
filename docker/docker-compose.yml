@@ -12,7 +12,7 @@ services:
             # папка с проектом
             - ../app:/var/www/app
             # конфиг для nginx
-            - "./conf/nginx:/etc/nginx/sites-available"
+            - "./nginx:/etc/nginx/conf.d"
             # папка с логами
             - ./storage/log/nginx:/var/log/nginx
         ports:
@@ -20,7 +20,7 @@ services:
         depends_on:
             - php-fpm
         # Подключаем к общей сети с другими контейнерами
-        networks: 
+        networks:
             - default
     # Контейнер с менеджером php
     php-fpm:
@@ -37,8 +37,10 @@ services:
             - "DB_HOST=mysql"
             - "REDIS_PORT=6379"
             - "REDIS_HOST=redis"
+        ports:
+            - "9000:9000"
         # Подключаем к общей сети с другими контейнерами
-        networks: 
+        networks:
             - default
     # Контейнер с базой данных
     mysql:
@@ -47,14 +49,14 @@ services:
         volumes:
             - ./storage/mysql:/var/lib/mysql
         environment:
-            - "MYSQL_ROOT_PASSWORD=secret"
+            - "MYSQL_ROOT_PASSWORD=root"
             - "MYSQL_USER=app"
-            - "MYSQL_PASSWORD=secret"
+            - "MYSQL_PASSWORD=app"
             - "MYSQL_DATABASE=app"
         ports:
             - "3306:3306"
         # Подключаем к общей сети с другими контейнерами
-        networks: 
+        networks:
             - default
     # Контейнер с redis
     redis:
@@ -64,15 +66,22 @@ services:
         ports:
             - "6379:6379"
         # Подключаем к общей сети с другими контейнерами
-        networks: 
+        networks:
             - default
     # Контейнер с phpmyadmin
     phpmyadmin:
         image: phpmyadmin/phpmyadmin:latest
+        # Add volume for sessions to allow session persistence
+        volumes:
+        - ./storage/phpmyadmin/sessions:/sessions
+        ports:
+            - "8080:80"
+        depends_on:
+            - mysql
         environment:
-            - PMA_HOST=db
-            - PMA_USER=root
-            - PMA_PASSWORD=root
+            - VIRTUAL_HOST=phpmyadmin.test
+            - PMA_HOST=mysql
+            - MYSQL_ROOT_PASSWORD=root
         networks:
             - default
 
