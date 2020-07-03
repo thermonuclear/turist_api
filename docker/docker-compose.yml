@@ -70,7 +70,9 @@ services:
             - default
     # Контейнер с phpmyadmin
     phpmyadmin:
-        image: phpmyadmin/phpmyadmin:latest
+        build:
+            context: .
+            dockerfile: phpmyadmin.dockerfile
         # Add volume for sessions to allow session persistence
         volumes:
         - ./storage/phpmyadmin/sessions:/sessions
