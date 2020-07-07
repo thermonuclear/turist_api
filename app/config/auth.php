@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'api',
         'passwords' => 'users',
     ],
 
@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\User::class,
+            'model' => App\EloquentModels\User::class,
         ],
 
         // 'users' => [
@@ -114,4 +114,9 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+     * src\Illuminate\Auth\AuthManager.php method createTokenDriver
+     * соответствие между ключом для api_token в запросе и внутри приложения
+     */
+    'input_key' => 'key',
 ];
