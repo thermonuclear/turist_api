@@ -19,12 +19,12 @@ use Illuminate\Support\Str;
 
 $factory->define(User::class, function (Faker $faker) {
     return [
-        'account' => Str::random(5),
+        'account' => substr(str_replace('.', '', $faker->unique()->userName), 0, 6),
         'name' => $faker->name,
         'email' => $faker->unique()->companyEmail,
         'email_verified_at' => now(),
         'password' => Str::random(10), // password
         'remember_token' => Str::random(10),
-        'api_token' => Hash::make(Str::random(8).' '.Str::random(8)),
+        'api_token' => Str::random(64),
     ];
 });
