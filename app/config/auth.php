@@ -45,6 +45,11 @@ return [
             'driver' => 'token',
             'provider' => 'users',
             'hash' => false,
+            /*
+             * src\Illuminate\Auth\AuthManager.php method createTokenDriver
+             * соответствие между ключом для api_token в запросе и внутри приложения
+             */
+            'input_key' => 'key',
         ],
     ],
 
@@ -113,10 +118,4 @@ return [
     */
 
     'password_timeout' => 10800,
-
-    /*
-     * src\Illuminate\Auth\AuthManager.php method createTokenDriver
-     * соответствие между ключом для api_token в запросе и внутри приложения
-     */
-    'input_key' => 'key',
 ];
