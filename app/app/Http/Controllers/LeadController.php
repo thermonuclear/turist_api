@@ -11,7 +11,7 @@ class LeadController extends Controller
      * Добавление лида
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
@@ -32,51 +32,9 @@ class LeadController extends Controller
             'lead_fields' => json_encode($request->input('params.fields') ?? []),
         ]);
 
-        //return $request->params;
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\EloquentModels\Lead  $lead
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Lead $lead)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\EloquentModels\Lead  $lead
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Lead $lead)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\EloquentModels\Lead  $lead
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Lead $lead)
-    {
-        //
+        return response()->json([
+            'success' => 1,
+            'desc' => 'Lead succesfully created',
+        ]);
     }
 }
