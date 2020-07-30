@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\LeadController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\TouristController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::domain('{account}.' . env('APP_HOST'))->middleware('auth:api')->group(function () {
 
     Route::post('/add-lead', [LeadController::class, 'index']);
-
+    Route::post('/add-tourist', [TouristController::class, 'store']);
+    Route::post('/edit-tourist', [TouristController::class, 'update']);
 
 });
 //Route::middleware('auth:api')->get('/user', function (Request $request) {
