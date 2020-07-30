@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\EloquentModels\Lead;
 use Illuminate\Http\Request;
+use Validator;
 
 class LeadController extends Controller
 {
@@ -15,13 +16,17 @@ class LeadController extends Controller
      */
     public function index(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'params.name' => ['required', 'string', 'max:255'],
             'params.phone' => ['nullable', 'string', 'max:255'],
             'params.email' => ['nullable', 'email'],
             'params.source' => ['nullable', 'string', 'max:255'],
             'params.fields' => ['nullable', 'array'],
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors()->all()]);
+        }
 
         (new Lead())->newQuery()->create([
             'lead_user_id' => $request->user()->id,
