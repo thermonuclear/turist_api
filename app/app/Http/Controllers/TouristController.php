@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\EloquentModels\Tourist;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Validator;
 
 class TouristController extends Controller
 {
-
+    /**
+     * @var array $rules Правила валидации
+     */
     public array $rules = [
         'params.name' => ['required', 'string', 'max:255'],
         'params.name_lat' => ['required', 'string', 'max:255'],
@@ -36,10 +40,40 @@ class TouristController extends Controller
     ];
 
     /**
+     * @var array $fields Поля разрешенные для показа в списке туристов
+     */
+    public array $fields = [
+        'id',
+        'name',
+        'name_lat',
+        'address',
+        'tel',
+        'dr',
+        'passport_series',
+        'passport_number',
+        'passport_who',
+        'passport_when',
+        'passport_till',
+        'gender',
+        'email',
+        'passport_series_rus',
+        'passport_number_rus',
+        'passport_who_rus',
+        'passport_when_rus',
+        'receive_sms',
+        'receive_email',
+        'manager_id',
+        'office_id',
+        'manager_name',
+        'office_name',
+        'comments',
+    ];
+
+    /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request  $request
+     * @return JsonResponse
      */
     public function store(Request $request)
     {
@@ -58,21 +92,97 @@ class TouristController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Возвращает список туристов.
      *
-     * @param  \App\EloquentModels\Tourist  $tourist
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function show(Tourist $tourist)
+    public function show(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'params.count' => ['required', 'integer', 'between:1,100'],
+            'params.offset' => ['required', 'integer'],
+            'params.fields' => ['required', 'array', 'max:' . count($this->fields), function ($attribute, $value, $fail) {
+                    if (array_diff($value, $this->fields)) {
+                        $fail($attribute . ' содержит неизвестные поля');
+                    }
+                },
+            ],
+            'params.search' => ['nullable', 'string', 'max:255'],
+            'params.id' => ['nullable', 'integer', 'exists:App\EloquentModels\Tourist,id'],
+            'params.manager_id' => ['nullable', 'integer'],
+            'params.office_id' => ['nullable', 'integer'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors()->all()]);
+        }
+
+        $tourists = (new Tourist())->newQuery()->select($request->input('params.fields'))
+            ->where('user_id', $request->user()->id)
+            ->when($request->input('params.search'), function ($query, $search) {
+                return $query->where(function($query) use ($search) {
+                    $query->where('tel', 'like', "%$search%")
+                        ->orWhere('name', 'like', "%$search%");
+                });
+            })
+            ->when($request->input('params.id'), function ($query, $id) {
+                return $query->where('id', $id);
+            })
+            ->when($request->input('params.manager_id'), function ($query, $id) {
+                return $query->where('manager_id', $id);
+            })
+            ->when($request->input('params.office_id'), function ($query, $id) {
+                return $query->where('office_id', $id);
+            })
+            ->offset($request->input('params.offset'))
+            ->limit($request->input('params.count'))
+            ->get();
+
+        return response()->json($tourists->toArray());
+    }
+
+    /**
+     * Возвращает список имен туристов.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function showName(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'params.count' => ['required', 'integer', 'between:1,100'],
+            'params.offset' => ['required', 'integer'],
+            'params.search' => ['required', 'string', 'max:255'],
+            'params.manager_id' => ['nullable', 'integer'],
+            'params.office_id' => ['nullable', 'integer'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors()->all()]);
+        }
+
+        $tourists = (new Tourist())->newQuery()
+            ->where('user_id', $request->user()->id)
+            ->where('name', 'like', '%' . $request->input('params.search') . '%')
+            ->when($request->input('params.manager_id'), function ($query, $id) {
+                return $query->where('manager_id', $id);
+            })
+            ->when($request->input('params.office_id'), function ($query, $id) {
+                return $query->where('office_id', $id);
+            })
+            ->offset($request->input('params.offset'))
+            ->limit($request->input('params.count'))
+            ->pluck('name');
+
+        return response()->json($tourists);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request  $request
+     * @return JsonResponse
      */
     public function update(Request $request)
     {
@@ -84,7 +194,10 @@ class TouristController extends Controller
             return response()->json(['error'=>$validator->errors()->all()]);
         }
 
-        (new Tourist())->newQuery()->where('id', $request->input('params.id'))->update($this->getData($request));
+        (new Tourist())->newQuery()
+            ->where('user_id', $request->user()->id)
+            ->where('id', $request->input('params.id'))
+            ->update($this->getData($request));
 
         return response()->json([
             'success' => 1,
@@ -95,14 +208,37 @@ class TouristController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\EloquentModels\Tourist  $tourist
-     * @return \Illuminate\Http\Response
+     * @param Request  $request
+     * @return JsonResponse
+     *
      */
-    public function destroy(Tourist $tourist)
+    public function destroy(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'params.id' => ['required', 'integer', 'exists:App\EloquentModels\Tourist,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors()->all()]);
+        }
+
+        (new Tourist())->newQuery()
+            ->where('user_id', $request->user()->id)
+            ->where('id', $request->input('params.id'))
+            ->delete();
+
+        return response()->json([
+            'success' => 1,
+            'desc' => 'Tourist succesfully deleted'
+        ]);
     }
 
+    /**
+     * массив данных туриста
+     *
+     * @param  Request  $request
+     * @return array
+     */
     public function getData(Request $request)
     {
         return [

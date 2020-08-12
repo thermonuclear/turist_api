@@ -20,6 +20,9 @@ Route::domain('{account}.' . env('APP_HOST'))->middleware('auth:api')->group(fun
     Route::post('/add-lead', [LeadController::class, 'index']);
     Route::post('/add-tourist', [TouristController::class, 'store']);
     Route::post('/edit-tourist', [TouristController::class, 'update']);
+    Route::post('/get-tourist-list', [TouristController::class, 'show']);
+    Route::post('/get-tourist-list-by-name', [TouristController::class, 'showName']);
+    Route::post('/delete-tourist', [TouristController::class, 'destroy']);
 
 });
 //Route::middleware('auth:api')->get('/user', function (Request $request) {
