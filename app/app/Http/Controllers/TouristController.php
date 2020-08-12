@@ -8,6 +8,33 @@ use Validator;
 
 class TouristController extends Controller
 {
+
+    public array $rules = [
+        'params.name' => ['required', 'string', 'max:255'],
+        'params.name_lat' => ['required', 'string', 'max:255'],
+        'params.gender' => ['required', 'in:f,m'],
+        'params.address' => ['required', 'string', 'max:255'],
+        'params.tel' => ['nullable', 'string', 'max:255'],
+        'params.email' => ['nullable', 'string', 'max:255'],
+        'params.passport_series' => ['nullable', 'string', 'max:255'],
+        'params.passport_number' => ['nullable', 'string', 'max:255'],
+        'params.passport_who' => ['nullable', 'string', 'max:255'],
+        'params.passport_when' => ['nullable', 'date_format:Y-m-d'],
+        'params.passport_till' => ['nullable', 'date_format:Y-m-d'],
+        'params.passport_series_rus' => ['nullable', 'string', 'max:255'],
+        'params.passport_number_rus' => ['nullable', 'string', 'max:255'],
+        'params.passport_who_rus' => ['nullable', 'string', 'max:255'],
+        'params.passport_when_rus' => ['nullable', 'date_format:Y-m-d'],
+        'params.dr' => ['nullable', 'date_format:Y-m-d'],
+        'params.receive_sms' => ['nullable', 'boolean'],
+        'params.receive_email' => ['nullable', 'boolean'],
+        'params.manager_id' => ['required', 'integer'],
+        'params.office_id' => ['required', 'integer'],
+        'params.groups' => ['nullable', 'array'],
+        'params.contacts' => ['nullable', 'array'],
+        'params.vk' => ['nullable', 'json'],
+    ];
+
     /**
      * Store a newly created resource in storage.
      *
@@ -16,37 +43,69 @@ class TouristController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'params.name' => ['required', 'string', 'max:255'],
-            'params.name_lat' => ['required', 'string', 'max:255'],
-            'params.gender' => ['required', 'in:f,m'],
-            'params.address' => ['required', 'string', 'max:255'],
-            'params.tel' => ['nullable', 'string', 'max:255'],
-            'params.email' => ['nullable', 'string', 'max:255'],
-            'params.passport_series' => ['nullable', 'string', 'max:255'],
-            'params.passport_number' => ['nullable', 'string', 'max:255'],
-            'params.passport_who' => ['nullable', 'string', 'max:255'],
-            'params.passport_when' => ['nullable', 'date_format:Y-m-d'],
-            'params.passport_till' => ['nullable', 'date_format:Y-m-d'],
-            'params.passport_series_rus' => ['nullable', 'string', 'max:255'],
-            'params.passport_number_rus' => ['nullable', 'string', 'max:255'],
-            'params.passport_who_rus' => ['nullable', 'string', 'max:255'],
-            'params.passport_when_rus' => ['nullable', 'date_format:Y-m-d'],
-            'params.dr' => ['nullable', 'date_format:Y-m-d'],
-            'params.receive_sms' => ['nullable', 'boolean'],
-            'params.receive_email' => ['nullable', 'boolean'],
-            'params.manager_id' => ['required', 'integer'],
-            'params.office_id' => ['required', 'integer'],
-            'params.groups' => ['nullable', 'array'],
-            'params.contacts' => ['nullable', 'array'],
-            'params.vk' => ['nullable', 'json'],
-        ]);
+        $validator = Validator::make($request->all(), $this->rules);
 
         if ($validator->fails()) {
             return response()->json(['error'=>$validator->errors()->all()]);
         }
 
-        (new Tourist())->newQuery()->create([
+        (new Tourist())->newQuery()->create($this->getData($request));
+
+        return response()->json([
+            'success' => 1,
+            'desc' => 'Tourist succesfully created'
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\EloquentModels\Tourist  $tourist
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Tourist $tourist)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request)
+    {
+        $validator = Validator::make($request->all(), array_merge($this->rules, [
+            'params.id' => ['required', 'integer', 'exists:App\EloquentModels\Tourist,id']
+        ]));
+
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors()->all()]);
+        }
+
+        (new Tourist())->newQuery()->where('id', $request->input('params.id'))->update($this->getData($request));
+
+        return response()->json([
+            'success' => 1,
+            'desc' => 'Tourist succesfully updated'
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\EloquentModels\Tourist  $tourist
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Tourist $tourist)
+    {
+        //
+    }
+
+    public function getData(Request $request)
+    {
+        return [
             'user_id' => $request->user()->id,
             'name' => $request->input('params.name'),
             'name_lat' => $request->input('params.name_lat'),
@@ -75,45 +134,6 @@ class TouristController extends Controller
             'contacts' => json_encode($request->input('params.contacts') ?? []),
 
             'vk' => $request->input('params.vk') ?? '',
-        ]);
-
-        return response()->json([
-            'success' => 1,
-            'desc' => 'Tourist succesfully created'
-        ]);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\EloquentModels\Tourist  $tourist
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Tourist $tourist)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\EloquentModels\Tourist  $tourist
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Tourist $tourist)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\EloquentModels\Tourist  $tourist
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Tourist $tourist)
-    {
-        //
+        ];
     }
 }
