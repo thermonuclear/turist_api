@@ -64,6 +64,33 @@
         </style>
     </head>
     <body>
+    <script>
+        async function test() {
+            let $params = {
+                params: {
+                    'offset': 0,
+                    'count': 10,
+                    'id': 2
+                },
+                key: 'x5pwceKAo7UJQQ3Y2tiUg9C6PpNf2cAxCJTNPIuYquWctv9Glh6cJVx45cAGbCAA'
+            };
+
+            let response = await fetch('http://account.turist-api.test/api/delete-tourist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify($params)
+            })
+
+            let result = await response.json();
+            console.log(JSON.stringify(result));
+        }
+
+        // test();
+    </script>
+
+
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
