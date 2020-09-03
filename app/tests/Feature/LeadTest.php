@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class LeadTest extends TestCase
@@ -13,7 +11,7 @@ class LeadTest extends TestCase
      *
      * @return void
      */
-    public function testExample()
+    public function testAddLead()
     {
         $response = $this->postJson('/add-lead', [
             'params' => [
@@ -32,7 +30,7 @@ class LeadTest extends TestCase
                     ]
                 ]
             ],
-            'key' => 'x5pwceKAo7UJQQ3Y2tiUg9C6PpNf2cAxCJTNPIuYquWctv9Glh6cJVx45cAGbCAA',
+            'key' => env("API_KEY_TEST"),
         ]);
 
         $response->assertStatus(200)->assertJson([

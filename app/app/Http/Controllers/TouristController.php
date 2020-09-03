@@ -64,9 +64,10 @@ class TouristController extends Controller
         'receive_email',
         'manager_id',
         'office_id',
-        'manager_name',
-        'office_name',
-        'comments',
+        // эти поля, по-видимому, должны храниться в иной таблице(она в этом примере не реализована)
+        // 'manager_name',
+        // 'office_name',
+        // 'comments',
     ];
 
     /**

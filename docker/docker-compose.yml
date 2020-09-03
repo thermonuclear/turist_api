@@ -21,7 +21,9 @@ services:
             - php-fpm
         # Подключаем к общей сети с другими контейнерами
         networks:
-            - default
+            default:
+                # задаем статический ip-адрес
+                ipv4_address: 172.19.0.6
     # Контейнер с менеджером php
     php-fpm:
         build:
@@ -42,6 +44,9 @@ services:
         # Подключаем к общей сети с другими контейнерами
         networks:
             - default
+        extra_hosts:
+            # добавляем путь в файл hosts
+            - "turist-api.test:172.19.0.6"
     # Контейнер с базой данных
     mysql:
         image: mysql:8
@@ -57,7 +62,9 @@ services:
             - "3306:3306"
         # Подключаем к общей сети с другими контейнерами
         networks:
-            - default
+            default:
+                # задаем статический ip-адрес
+                ipv4_address: 172.19.0.2
     # Контейнер с redis
     redis:
         image: redis:3.0
@@ -90,4 +97,7 @@ services:
 # Создаем общую сеть deafult для всех контейнеров
 networks:
     default:
-        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: "172.19.0.0/16"
