@@ -1,4 +1,4 @@
 # turist_api
-Пример того, как могло бы быть реализовано api сервиса https://www.moidokumenti.ru/downloads/API.pdf
+Пример того, как могло бы быть реализовано api сервиса https://www.moidokumenti.ru/downloads/API.pdf на Laravel.
 В примере реализованы методы для пункта Лиды и Туристы.
 Настроена среда разработки на докер.
